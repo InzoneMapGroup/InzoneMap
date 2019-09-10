@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>
+    <link rel="stylesheet" href="chuangti.css">
+
+    <title>山东省银座家居分布图</title>
+</head>
+<body>
+<!--在container中显示地图-->
+<div id="container"></div>
+<!--<div class="info" id="text">-->
+<!--    请点击覆盖物试试-->
+<!--</div>-->
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=fc80ab32a75113402df0a426957c25e3&plugin=Map3D,AMap.DistrictLayer,AMap.Scale,AMap.ToolBar"></script>
+<script src="https://a.amap.com/Loca/static/mock/adcodes.js"></script>
+<script>
+    var adCode = 130000;
+    var depth = 2;
+    var map = new AMap.Map("container", {
+        //地图显示的缩放级别，若center与level未赋值，地图初始化默认显示用户所在城市范围
+        //3D地图下，zoom值，可以设置为浮点数。（在V1.3.0版本level参数调整为zoom，3D地图修改自V1.4.0开始生效）
+        zoom: 7.5,
+        //山东省经度：东经114度19分-122度43分
+        //山东省纬度：北纬34度22分-38度23分
+        //据此算出中心经纬度：
+        center: [118.31, 36.23],
+        pitch: 0,
+        viewMode: '3D',
+    });
+
+    // 创建省份图层
+    var disProvince;
+    function initPro(code, dep) {
+        dep = 1;//显示市级
+        code = 370000;//只显示山东省，编码为行政编码
+        adCode = code;
+        depth = dep;
+
+        disProvince && disProvince.setMap(null);
+
+        disProvince = new AMap.DistrictLayer.Province({
+            zIndex: 12,
+            adcode: [code],
+            depth: dep,
+            styles: {
+                'fill': function (properties) {
+                    // properties为可用于做样式映射的字段，包含
+                    // NAME_CHN:中文名称
+                    // adcode_pro
+                    // adcode_cit
+                    // adcode
+                    var adcode = properties.adcode;
+                    return getColorByAdcode(adcode);
+                },
+                'province-stroke': 'cornflowerblue',
+                'city-stroke': 'white', // 中国地级市边界
+                'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
+            }
+        });
+
+        disProvince.setMap(map);
+    }
+
+    // 颜色辅助方法
+    // 为每个市随机分配颜色深浅
+
+    var getColorByAdcode = function (adcode) {
+        var colors = {
+            370100: "rgb(255,255,1)",
+            370200: "rgb(255,204,154)",
+            370300: "rgb(255,203,96)",
+            370400: "rgb(254,254,156)",
+            370500: "rgb(255,202,254)",
+            370600: "rgb(255,255,1)",
+            370700: "rgb(154,255,153)",
+            370800: "rgb(254,203,155)",
+            370900: "rgb(47,127,156)",
+            371000: "rgb(255,204,255)",
+            371100: "rgb(255,255,1)",
+            371200: "rgb(137,235,130)",
+            371300: "rgb(255,202,254)",
+            371400: "rgb(255,205,152)",
+            371500: "rgb(142,51,144)",
+            371600: "rgb(153,255,149)",
+            371700: "rgb(154,255,153)"};
+        return colors[adcode];
+    };
+    //生成地图
+    initPro(adCode, depth);
+
+    var markerList=[
+        ["银座家居中心店",[117.0194330000, 36.6852550000],"0531-55559777","济南北园大街419号","top"],
+        ["银座家居北园店",[117.0143030000, 36.6831530000],"0531-83160000","济南北园大街408号","bottom"],
+        ["银座家居莱芜店",[117.6699000000, 36.2036700000],"0634-5686118","山东省济南市莱芜区凤城西大街065号","top"],
+        ["银座家居淄博店",[118.0517490000,36.7999040000],"0533-62810000","淄博市张店区新村西路29号","top"],
+        ["银座家居临沂店",[118.3422000000,35.0635500000],"0539-5639000","临沂市兰山区沂蒙路与金四路交汇西200米","top"],
+        ["银座家居菏泽店",[115.4913700000,35.1997500000],"0530-7086000","菏泽市开发区人民南路688号","top"],
+        ["银座家居滨州店",[117.9932200000,37.3809900000],"0543-50270000","滨州市黄河五路与渤海十二路交汇处","top"],
+        ["银座家居东营店",[118.6436900000,37.4348000000],"0546-7790000","东营市东二路与府前大街交汇处225号","top"],
+        ["银座家居威海海滨店",[122.1378700000,37.4770700000],"0631-3688800","威海市环翠区青岛北路88号","top"],
+		["银座家居威海幸福店",[122.127236,37.499399],"0631-3688800","威海市环翠区世昌大道1号","bottom"]
+    ];
+    //addMarker();
+    //function  addMarker() {
+        map.clearMap();
+        for(var i=0;i<markerList.length;i++){
+        //闭包实现
+            (function(x) {
+                var marker=new AMap.Marker({
+                    position: markerList[i][1],
+                    icon: new AMap.Icon({
+                        image: "star.ico",
+                        size: new AMap.Size(20, 20),  //图标大小
+                        imageSize: new AMap.Size(20,20)
+                    }),
+                    map:map
+                });
+                // 设置label标签
+                // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                marker.setLabel({
+                    offset: markerList[i][4]==="top"?(new AMap.Pixel(0, 10)):(new AMap.Pixel(0,-10)),  //设置文本标注偏移量
+                    content: "<div class='info'>" + markerList[i][0] + "</div>", //设置文本标注内容
+                    direction: markerList[i][4] //设置文本标注方位
+                });
+                var content = [];
+                content.push(markerList[i][3]);//地址信息
+                // console.log(markerList[i][3])
+                content.push(markerList[i][2]);//电话信息
+                var title=markerList[i][0];
+                marker.on('click',function(e) {
+                    infoWindow.setContent(createInfoWindow(title,content.join("<br>")));
+                    infoWindow.open(map,e.lnglat);
+                })
+            })(i);
+        }
+
+        var infoWindow = new AMap.InfoWindow({
+            isCustom: true,  //使用自定义窗体
+            content: "",
+            offset: new AMap.Pixel(0, -30)
+        });
+    //}
+
+    //自定义窗口中的内容
+    function createInfoWindow (title, content){
+        var info = document.createElement("div");
+        info.className = "custom-info input-card content-window-card-details";
+        //可以通过下面的方式修改自定义窗体的宽高
+        info.style.width = "300px";
+        // 定义顶部标题
+        var top = document.createElement("div");
+        var titleD = document.createElement("div");
+        var closeX = document.createElement("img");
+        top.className = "info-top";
+        titleD.innerHTML = title;
+        closeX.src = "https://webapi.amap.com/images/close2.gif";
+        closeX.onclick = closeInfoWindow;
+
+        top.appendChild(titleD);
+        top.appendChild(closeX);
+        info.appendChild(top);
+
+        // 定义中部内容
+        var middle = document.createElement("div");
+        middle.className = "info-middle";
+        middle.style.backgroundColor = 'white';
+        middle.innerHTML = content;
+        info.appendChild(middle);
+
+        // 定义底部内容
+        var bottom = document.createElement("div");
+        bottom.className = "info-bottom";
+        bottom.style.position = 'relative';
+        bottom.style.top = '0px';
+        bottom.style.margin = '0 auto';
+        var sharp = document.createElement("img");
+        sharp.src = "https://webapi.amap.com/images/sharp.png";
+        bottom.appendChild(sharp);
+        info.appendChild(bottom);
+        return info;
+    }
+    //关闭窗口
+    function closeInfoWindow() {
+        map.clearInfoWindow();
+    }
+
+    //add()
+    // function getLngLat(e){
+    //     // document.getElementById("lnglat").value= e.lnglat.getLng() + ',' + e.lnglat.getLat();
+    //     //document.getElementById("lnglat").value = e.lnglat.getLng() + ',' + e.lnglat.getLat();
+    //     //var lnglatInput = document.getElementById('lnglat');
+    //     // lnglatInput.innerText=e.lnglat.getLng() + ',' + e.lnglat.getLat();
+    //     //lnglatInput.setAttribute('value', e.lnglat.getLng());
+    //     document.getElementById("lnglat").value=e.lng+","+e.lat;
+    // }
+    //
+    // var infoWindow;
+    // map.on('click',function (e) {
+    //     //console.log(e.lnglat.lat,"----------");
+    //     //console.log(e.lnglat,"----------");
+    //     var info = [];
+    //     info.push("<div class='input-card content-window-card'> ");
+    //     // info.push("<p class='input-item'>城市：</p>");
+    //     // info.push("<p class='input-item'>地址 :北京市朝阳区望京阜荣街10号首开广场4层</p></div></div>");
+    //     info.push("<h3>新增城市位置</h3>");
+    //     info.push("<table><tr><td class='content1'>城市：</td>");
+    //     info.push("<td><select>" +
+    //         "<option value='1'>请选择</option>" +
+    //         "<option value='jinan'>济南</option>" +
+    //         "<option value='zibo'>淄博</option>" +
+    //         "<option value='weifng'>潍坊</option>" +
+    //         "<option value='qingdao'>青岛</option>" +
+    //         "<option value='taian'>泰安</option>" +
+    //         "<option value='rizhao'>日照</option>" +
+    //         "<option value='linyi'>临沂</option>" +
+    //         "<option value='zaozhuang'>枣庄</option>" +
+    //         "<option value='jining'>济宁</option>" +
+    //         "<option value='heze'>菏泽</option>" +
+    //         "<option value='liaocheng'>聊城</option>" +
+    //         "<option value='dezhou'>德州</option>" +
+    //         "<option value='binzhou'>滨州</option>" +
+    //         "<option value='dongying'>东营</option>" +
+    //         "<option value='weihai'>威海</option>" +
+    //         "<option value='yantai'>烟台</option>" +
+    //         "</select></td>");
+    //     info.push("</tr>");
+    //     info.push("<tr><td>经纬度：</td>");
+    //     info.push("<td><input  id='lnglat' readonly='true' width='80px' type='text'/> </td>");
+    //     info.push("</tr>");
+    //     info.push("<tr><td></td><td><input id='content5' type='button' class='btn' value='获取该点的经纬度' onclick='getLngLat("+JSON.stringify(e.lnglat)+")'/></td></tr>")
+    //
+    //     info.push("<tr><td>位置：</td>");
+    //     info.push("<td ><input id='content4' type='text' /></td></tr>");
+    //     info.push("<tr><td>类型：</td>");
+    //     info.push("<td>显示文本<input type='radio' name='leixing' checked>" +
+    //         "&nbsp&nbsp" +
+    //         "显示坐标<input type='radio' name='leixing' ></td></tr>");
+    //     info.push("</table>");
+    //     info.push("<p class='input-item'>*提示：请在地图中添加你想要的标记的位置，用鼠标点击左键即可</p>");
+    //     info.push("<br><br>");
+    //     //var getEle=document.getElementById("content4").value;
+    //     info.push("<div class='content2'><input  type='submit' value='新增' onclick='addPointToMap()'/></div>");
+    //     info.push("</div>");
+    //     infoWindow = new AMap.InfoWindow({
+    //         content: info.join("")
+    //     });
+    //     infoWindow.open(map, map.getCenter());
+    //
+    //     let lnglatXY = [e.lnglat.lng,e.lnglat.lat];
+    //     AMap.service('AMap.Geocoder',function() {//回调函数
+    //         geocoder = new AMap.Geocoder({
+    //         });
+    //         geocoder.getAddress(lnglatXY, function (status, result) {
+    //             if (status === 'complete' && result.info === 'OK') {
+    //                 //获得了有效的地址信息:
+    //                 document.getElementById("content4").value=result.regeocode.formattedAddress;
+    //             } else {
+    //                 //获取地址失败
+    //                 console.log("失败");
+    //             }
+    //         });
+    //     })
+    //
+    // })
+    //
+    //
+    // function addPointToMap(){
+    //     let lngAndLat = document.getElementById("lnglat").value.split(",");
+    //     let labName = document.getElementById("content4").value;
+    //     if(labName==""){
+    //         alert("请输入位置再进行添加");
+    //         return "";
+    //     }
+    //     if(lngAndLat==""){
+    //         alert("请先获取经纬度");
+    //         return "";
+    //     }
+    //     text = new AMap.Text({
+    //         text:labName,
+    //         anchor:'center', // 设置文本标记锚点
+    //         draggable:false,
+    //         cursor:'pointer',
+    //         angle:0,
+    //         style:{
+    //             'border-width': 0,
+    //             'text-align': 'center',
+    //             'font-size': '11px',
+    //             'color': 'black'
+    //         },
+    //         position: [lngAndLat[0],lngAndLat[1]],
+    //
+    //     });
+    //     text.setMap(map);
+    //     infoWindow.close();
+    //
+    // }
+
+
+</script>
+
+</body>
+</html>
